@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title></title>
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+	</head>
+		<style>
+			img {
+        width: 300px;
+      }
+
+      .selected {
+        font-weight: bold;
+      }
+		</style>
+	<body>
+		<div id='app'></div>
+		<script type='text/babel'>
+			const App = () => {
+				const [players, setPlayers] = React.useState([])
+				const [detail, setDetail] = React.useState({})
+				const loadPlayers = async() => {
+          const response = await fetch('https://fsa-puppy-bowl.herokuapp.com/api/2209-FTB-ET-WEB-AM/players');
+					const json = await response.json()
+					setPlayers(json.data.players)
+				}
+
+				const loadDetail = async() => {
+					const id = location.hash.slice(1)			
+					if(id) {
+            const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/2209-FTB-ET-WEB-AM/players/${id}`);
+						const json = await response.json()
+						setDetail(json.data.player)
+					}
+					else {
+						setDetail({})
+					}
+				}
+
+				React.useEffect(() => {
+					loadPlayers()
+				}, [])
+				React.useEffect(()=> {
+					window.addEventListener('hashchange', loadDetail)
+					loadDetail()
+				}, [])
+				return (
+					<div>
+						{
+							players.map(player => {
+								return (
+									<li key={player.id} className={player.id === detail.id ? 'selected' : ''}>
+										<a href={`#${player.id}`}>
+											{player.name}
+										</a>
+										<br />
+										{player.breed}
+									</li>
+								)
+							})
+						}
+						{
+							detail.id ? ( <img src={detail.imageUrl}/> ) : null
+						}
+					</div>
+				)
+			}
+			let root = ReactDOM.createRoot(document.querySelector('#app'))
+			root.render(<App/>)
+		</script>
+	</body>
+</html>
